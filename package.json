@@ -1,0 +1,22 @@
+{
+  "name": "qp-model",
+  "version": "1.0.0",
+  "description": "schema & model components for server & client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjr--/qp-model.git"
+  },
+  "author": "CJR",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cjr--/qp-model/issues"
+  },
+  "homepage": "https://github.com/cjr--/qp-model#readme",
+  "dependencies": {
+    "qp-utility": "x"
+  }
+}
