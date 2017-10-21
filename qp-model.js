@@ -1,10 +1,19 @@
 define(module, function(exports, require) {
 
+  exports('qp-model', {
+    model: require('model'),
+    schema: require('schema')
+  });
+
+});
+
+define(module, function(exports, require) {
+
   var qp = require('qp-utility');
 
   qp.make(exports, {
 
-    ns: 'qp-model',
+    ns: 'qp-model/model',
 
     create: function(schema, data) {
       schema.create(data, { instance: this });
