@@ -14,7 +14,7 @@ define(module, function(exports, require) {
 
   qp.module(exports, {
 
-    ns: 'qp-library/schema',
+    ns: 'qp-model/schema',
 
     build: function(_exports, schema) {
       schema.create = this.create.bind(this, schema.columns);
@@ -28,15 +28,25 @@ define(module, function(exports, require) {
     },
 
     create: function(fields, data, options) {
-      data = data || {};
       options = qp.options(options, { internal: false });
-      var o = options.instance || {};
-      qp.each_own(fields, function(v, k) {
-        if (options.internal || !v.internal) {
-          o[k] = data[k] || v.default();
-        }
-      });
-      return o;
+      if (qp.is(data, 'array')) {
+        return qp.map(data, item => this.create_item(fields, item, {}, options));
+      } else if (qp.is(data, 'object')) {
+        return this.create_item(fields, data, options.instance || {}, options);
+      } else {
+        return null;
+      }
+    },
+
+    create_item: function(fields, source, target, options) {
+      if (qp.is(source, 'object')) {
+        qp.each_own(fields, function(v, k) {
+          if (options.internal || !v.internal) {
+            target[k] = source[k] || v.default();
+          }
+        });
+      }
+      return target || {};
     },
 
     field: function(type, size, options) {
