@@ -69,9 +69,9 @@ define(module, function(exports, require) {
       } else if (type === 'bool' || type === 'boolean') {
         field = { type: 'boolean', default: default_boolean };
       } else if (type === 'datetime') {
-        field = { type: 'date', default: default_datetime };
+        field = { type: 'timestamp with time zone', default: default_datetime };
       } else if (type === 'date') {
-        field = { type: 'date', default: default_date };
+        field = { type: 'timestamp with time zone', default: default_date };
       } else {
         field = { type: '', default: qp.noop };
       }
