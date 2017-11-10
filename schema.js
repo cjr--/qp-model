@@ -6,11 +6,7 @@ define(module, function(exports, require) {
   function default_number() { return 0; }
   function default_boolean() { return false; }
   function default_datetime() { return new Date(); }
-  function default_date() {
-    var date = new Date();
-    date.setUTCHours(12, 0, 0, 0);
-    return date;
-  }
+  function default_date() { return (new Date()).setUTCHours(12, 0, 0, 0); }
 
   qp.module(exports, {
 
@@ -30,7 +26,9 @@ define(module, function(exports, require) {
     create: function(fields, data, options) {
       options = qp.options(options, { internal: false });
       if (qp.is(data, 'array')) {
-        return qp.map(data, item => this.create_item(fields, item, {}, options));
+        return qp.map(data, function(item) {
+          return this.create_item(fields, item, {}, options);
+        }.bind(this));
       } else if (qp.is(data, 'object')) {
         return this.create_item(fields, data, options.instance || {}, options);
       } else {

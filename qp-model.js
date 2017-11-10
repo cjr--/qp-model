@@ -1,14 +1,5 @@
 define(module, function(exports, require) {
 
-  exports('qp-model', {
-    model: require('model'),
-    schema: require('schema')
-  });
-
-});
-
-define(module, function(exports, require) {
-
   var qp = require('qp-utility');
 
   qp.make(exports, {
@@ -41,11 +32,7 @@ define(module, function(exports, require) {
   function default_number() { return 0; }
   function default_boolean() { return false; }
   function default_datetime() { return new Date(); }
-  function default_date() {
-    var date = new Date();
-    date.setUTCHours(12, 0, 0, 0);
-    return date;
-  }
+  function default_date() { return (new Date()).setUTCHours(12, 0, 0, 0); }
 
   qp.module(exports, {
 
@@ -65,7 +52,9 @@ define(module, function(exports, require) {
     create: function(fields, data, options) {
       options = qp.options(options, { internal: false });
       if (qp.is(data, 'array')) {
-        return qp.map(data, item => this.create_item(fields, item, {}, options));
+        return qp.map(data, function(item) {
+          return this.create_item(fields, item, {}, options);
+        }.bind(this));
       } else if (qp.is(data, 'object')) {
         return this.create_item(fields, data, options.instance || {}, options);
       } else {
@@ -104,9 +93,9 @@ define(module, function(exports, require) {
       } else if (type === 'bool' || type === 'boolean') {
         field = { type: 'boolean', default: default_boolean };
       } else if (type === 'datetime') {
-        field = { type: 'date', default: default_datetime };
+        field = { type: 'timestamp with time zone', default: default_datetime };
       } else if (type === 'date') {
-        field = { type: 'date', default: default_date };
+        field = { type: 'timestamp with time zone', default: default_date };
       } else {
         field = { type: '', default: qp.noop };
       }
