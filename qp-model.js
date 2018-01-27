@@ -16,7 +16,7 @@ define(module, function(exports, require) {
       if (qp.is(user, 'array')) user = qp.find(user, { id: this.user_id });
       if (qp.is(user, 'user')) {
         this.user = user;
-        this.user_id = this.user.id;
+        this.user_id = user.id;
       }
     }
 
