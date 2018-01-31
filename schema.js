@@ -47,31 +47,61 @@ define(module, function(exports, require) {
       return target || {};
     },
 
-    field: function(type, size, options) {
-      if (qp.is(size, 'object')) options = size; size = 0;
+    field: function(type, size, scale, options) {
+      if (qp.is(size, 'object', 'undefined')) {
+        options = size;
+        size = scale = 0;
+      } else if (qp.is(scale, 'object', 'undefined')) {
+        options = scale;
+        scale = 0;
+      }
       var field;
-      if (type === 'text') {
-        if (size) {
-          field = { type: 'varchar', size: size, default: default_string };
-        } else {
-          field = { type: 'text', default: default_string };
-        }
-      } else if (type === 'int' || type === 'integer') {
-        if (size === 2) {
-          field = { type: 'smallint', default: default_number };
-        } else if (size === 8) {
-          field = { type: 'bigint', default: default_number };
-        } else {
-          field = { type: 'integer', default: default_number };
-        }
+
+      // TEXT
+      if (type === 'text' && size === 0) {
+        field = { type: 'varchar', size: size, default: default_string };
+      } else if (type === 'text') {
+        field = { type: 'text', default: default_string };
+
+      // INTEGER
+      } else if (type === 'smallint' || type === 'int2') {
+        field = { type: 'smallint', size: 2, default: default_number };
+      } else if (type === 'int' || type === 'int4' || type === 'integer') {
+        field = { type: 'integer', size: 4, default: default_number };
+      } else if (type === 'bigint' || type === 'int8') {
+        field = { type: 'bigint', size: 8, default: default_number };
+
+      // NUMERIC
+      } else if (type === 'numeric' || type === 'decimal' || type === 'number') {
+        field = { type: 'numeric', size: size, scale: scale, default: default_number };
+
+      // CURRENCY
+      } else if (type === 'currency') {
+        field = { type: 'numeric', size: 12, scale: 4, default: default_number };
+
+      // BOOLEAN
       } else if (type === 'bool' || type === 'boolean') {
         field = { type: 'boolean', default: default_boolean };
+
+      // DATETIME
       } else if (type === 'datetime') {
         field = { type: 'timestamp with time zone', default: default_datetime };
+
+      // DATE
       } else if (type === 'date') {
         field = { type: 'timestamp with time zone', default: default_date };
+
+      // SERIAL
+      } else if (type === 'smallserial') {
+        field = { type: 'smallserial', default: qp.noop };
+      } else if (type === 'serial') {
+        field = { type: 'serial', default: qp.noop };
+      } else if (type === 'bigserial') {
+        field = { type: 'bigserial', default: qp.noop };
+
       } else {
         field = { type: '', default: qp.noop };
+
       }
       return qp.options(field, options);
     },
