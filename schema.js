@@ -107,15 +107,23 @@ define(module, function(exports, require) {
     },
 
     primary: function() {
-      return this.field('int', 64, { primary: true, managed: true });
+      return this.field('integer', { primary: true, managed: true });
+    },
+
+    primary_key: function() {
+      return this.field('integer', { primary_key: true, sequence: true, managed: false });
     },
 
     foreign: function(table) {
-      return this.field('int', 64, { foreign: true, table: table });
+      return this.field('integer', { foreign: true, table: table });
     },
 
     foreign_ids: function(table) {
-      return this.field('int', 64, { foreign: true, table: table, array: true });
+      return this.field('integer', { foreign: true, table: table, array: true });
+    },
+
+    unique: function() {
+      return this.field('integer', { unique: true, managed: false });
     },
 
     created: function() {
