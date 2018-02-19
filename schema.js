@@ -12,15 +12,30 @@ define(module, function(exports, require) {
 
     ns: 'qp-model/schema',
 
-    build: function(_exports, schema) {
-      schema.create = this.create.bind(this, schema.columns);
-      schema.table = { name: schema.table };
-      schema.fields = { managed: [], all: [] };
-      qp.each_own(schema.columns, function(column, name) {
+    build: function(_exports, o) {
+      o.create = this.create.bind(this, o.columns);
+      o.schema_name = o.schema || false;
+      o.set_schema = this.set_schema.bind(this, o);
+      var schema_prefix = o.schema_name ? o.schema_name + '.' : '';
+      o.table = {
+        name: o.table,
+        fullname: schema_prefix + o.table,
+        id_sequence_name: schema_prefix + o.table + '_id_seq'
+      };
+      o.fields = { managed: [], all: [] };
+      qp.each_own(o.columns, function(column, name) {
         column.name = name;
-        if (column.managed) schema.fields.managed.push(name); else schema.fields.all.push(name);
+        if (column.managed) o.fields.managed.push(name); else o.fields.all.push(name);
       });
-      _exports(schema);
+      _exports(o);
+    },
+
+    set_schema: function(o, schema_name) {
+      if (o.schema_name === false) {
+        o.schema_name = schema_name;
+      }
+      o.table.fullname = (o.schema_name ? o.schema_name + '.' : '') + o.table.name;
+      o.table.id_sequence_name = o.table.fullname + '_id_seq';
     },
 
     create: function(fields, data, options) {
