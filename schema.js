@@ -7,6 +7,7 @@ define(module, function(exports, require) {
   function default_boolean() { return false; }
   function default_datetime() { return new Date(); }
   function default_date() { return (new Date()).setUTCHours(12, 0, 0, 0); }
+  function default_bytea() { return ''; }
 
   qp.module(exports, {
 
@@ -73,13 +74,11 @@ define(module, function(exports, require) {
       options = options || {};
       var field;
 
-      // TEXT
       if (type === 'text' && size === 0) {
         field = { type: 'varchar', size: size, default: options.default || default_string };
       } else if (type === 'text') {
         field = { type: 'text', default: options.default || default_string };
 
-      // INTEGER
       } else if (type === 'smallint' || type === 'int2') {
         field = { type: 'smallint', size: 2, default: options.default || default_number };
       } else if (type === 'int' || type === 'int4' || type === 'integer') {
@@ -87,27 +86,24 @@ define(module, function(exports, require) {
       } else if (type === 'bigint' || type === 'int8') {
         field = { type: 'bigint', size: 8, default: options.default || default_number };
 
-      // NUMERIC
       } else if (type === 'numeric' || type === 'decimal' || type === 'number') {
         field = { type: 'numeric', size: size, scale: scale, default: options.default || default_number };
 
-      // CURRENCY
       } else if (type === 'currency') {
         field = { type: 'numeric', size: 12, scale: 4, default: options.default || default_number };
 
-      // BOOLEAN
       } else if (type === 'bool' || type === 'boolean') {
         field = { type: 'boolean', default: options.default || default_boolean };
 
-      // DATETIME
-      } else if (type === 'datetime') {
+      } else if (type === 'dt' || type === 'datetime') {
         field = { type: 'timestamp with time zone', default: options.default || default_datetime };
 
-      // DATE
       } else if (type === 'date') {
         field = { type: 'timestamp with time zone', default: options.default || default_date };
 
-      // SERIAL
+      } else if (type === 'bytea') {
+        field = { type: 'bytea', default: options.default || default_bytea };
+
       } else if (type === 'smallserial') {
         field = { type: 'smallserial', default: qp.noop };
       } else if (type === 'serial') {
