@@ -13,6 +13,20 @@ define(module, function(exports, require) {
 
     ns: 'qp-model/schema',
 
+    extend: function(_exports, o) {
+      var schema = require(o.extend);
+      qp.each_own(o.indexes, function(index, name) {
+        index.name = name;
+        schema.indexes[name] = index;
+      });
+      qp.each_own(o.columns, function(column, name) {
+        column.name = name;
+        schema.columns[name] = column;
+        if (column.managed) schema.fields.managed.push(name); else schema.fields.all.push(name);
+      });
+      _exports(schema);
+    },
+
     build: function(_exports, o) {
       o.create = this.create.bind(this, o.columns);
       o.schema_name = o.schema || false;
@@ -24,9 +38,14 @@ define(module, function(exports, require) {
         id_sequence_name: schema_prefix + o.table + '_id_seq'
       };
       o.fields = { managed: [], all: [] };
+      o.columns = o.columns || {};
       qp.each_own(o.columns, function(column, name) {
         column.name = name;
         if (column.managed) o.fields.managed.push(name); else o.fields.all.push(name);
+      });
+      o.indexes = o.indexes || {};
+      qp.each_own(o.indexes, function(index, name) {
+        index.name = name;
       });
       _exports(o);
     },
@@ -35,8 +54,13 @@ define(module, function(exports, require) {
       if (o.schema_name === false) {
         o.schema_name = schema_name;
       }
-      o.table.fullname = (o.schema_name ? o.schema_name + '.' : '') + o.table.name;
+      var schema_prefix = o.schema_name ? o.schema_name + '.' : '';
+      o.table.fullname = schema_prefix + o.table.name;
       o.table.id_sequence_name = o.table.fullname + '_id_seq';
+      qp.each_own(o.columns, function(column, name) {
+        if (column.table) column.table_fullname = schema_prefix + column.table;
+        column.fullname = schema_prefix + name;
+      });
     },
 
     create: function(fields, data, options) {
@@ -61,6 +85,18 @@ define(module, function(exports, require) {
         });
       }
       return target || {};
+    },
+
+    index: function(column, options) {
+      if (qp.is(column, 'object')) {
+        options = column || {};
+      } else if (qp.is(column, 'string')) {
+        options = options || {};
+        options.column = column;
+      }
+      return qp.options(options, {
+        column: null, expression: null, method: 'btree', unique: false, asc: true, desc: false
+      });
     },
 
     field: function(type, size, scale, options) {
