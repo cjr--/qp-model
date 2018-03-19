@@ -108,9 +108,10 @@ define(module, function(exports, require) {
       o.table.fullname = schema_prefix + o.table.name;
       o.table.id_sequence_name = o.table.fullname + '_id_seq';
       qp.each_own(o.columns, function(column, name) {
-        if (column.table) column.table_fullname = schema_prefix + column.table;
-        column.fullname = schema_prefix + name;
+        column.table_fullname = schema_prefix + (column.table || o.table.name);
+        column.fullname = column.table_fullname + '.' + name;
       });
+      return o;
     },
 
     create: function(fields, data, options) {
