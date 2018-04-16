@@ -6,8 +6,11 @@ define(module, function(exports, require) {
 
     ns: 'qp-model/model',
 
-    create: function(schema, data) {
-      schema.create(data, { instance: this });
+    init: function(o) {
+      var schema = this.schema;
+      var source = qp.delete_key(o, schema.name);
+      this.set_data(source, o);
+      if (o && o.display) this.refresh();
     },
 
     refresh: function() { },
@@ -18,6 +21,34 @@ define(module, function(exports, require) {
         this.user = user;
         this.user_id = user.id;
       }
+    },
+
+    set_data: function(source, options) {
+      qp.each(this.schema.columns, function(column) {
+        var key = column.name;
+        if (column.primary || column.primary_key) {
+          var _key = '_' + key;
+          this[key] = source[key] || source[_key] || qp.id();
+          this[_key] = source[key] || 0;
+        } else {
+          this[key] = source[key] || column.default();
+        }
+      });
+    },
+
+    get_data: function(options) {
+      var target = options.target || {};
+      qp.each(this.schema.columns, function(column) {
+        var key = column.name;
+        if (column.primary || column.primary_key) {
+          var _key = '_' + key;
+          target[key] = this[key] === this[_key] ? this[key] : 0;
+          target[_key] = this[key] || 0;
+        } else {
+          target[key] = this[key];
+        }
+      });
+      return target;
     }
 
   });
@@ -28,12 +59,14 @@ define(module, function(exports, require) {
 
   var qp = require('qp-utility');
 
-  function default_string() { return ''; }
-  function default_number() { return 0; }
-  function default_boolean() { return false; }
+  var int_widths = { 2: 6, 4: 11, 8: 20 };
+
+  function default_string()   { return ''; }
+  function default_number()   { return 0; }
+  function default_boolean()  { return false; }
   function default_datetime() { return new Date(); }
-  function default_date() { return (new Date()).setUTCHours(12, 0, 0, 0); }
-  function default_bytea() { return ''; }
+  function default_date()     { return (new Date()).setUTCHours(12, 0, 0, 0); }
+  function default_bytea()    { return ''; }
 
   qp.module(exports, {
 
@@ -64,7 +97,7 @@ define(module, function(exports, require) {
         } else if (column.datetime) {
           column.width = 24;
         } else if (column.int) {
-          column.width = ({ 2: 6, 4: 11, 8: 20 })[column.size];
+          column.width = int_widths[column.size];
         } else if (column.numeric) {
           column.width = column.size + column.scale + 1;
         } else if (column.text) {
@@ -78,32 +111,41 @@ define(module, function(exports, require) {
     },
 
     build: function(_exports, o) {
-      o.create = this.create.bind(this, o.columns);
+      o.fields = { managed: [], all: [] };
+      o.columns = o.columns || {};
+      o.indexes = o.indexes || {};
       o.schema_name = o.schema || false;
-      o.set_schema = this.set_schema.bind(this, o);
       var schema_prefix = o.schema_name ? o.schema_name + '.' : '';
       o.table = {
         name: o.table,
         fullname: schema_prefix + o.table,
         id_sequence_name: schema_prefix + o.table + '_id_seq'
       };
-      o.fields = { managed: [], all: [] };
-      o.columns = o.columns || {};
       qp.each_own(o.columns, function(column, name) {
         column.name = name;
         if (column.managed) o.fields.managed.push(name); else o.fields.all.push(name);
       });
-      o.indexes = o.indexes || {};
-      qp.each_own(o.indexes, function(index, name) {
-        index.name = name;
-      });
+      qp.each_own(o.indexes, function(index, name) { index.name = name; });
+
+      o.create = this.create.bind(this, o.columns);
+      o.get_schema = this.get_model_definition.bind(this, o);
+      o.set_schema = this.set_schema.bind(this, o);
       _exports(o);
     },
 
+    get_model_definition: function(o) {
+      var definition = { name: o.name };
+      var columns = definition.columns = [];
+      qp.each_own(o.columns, function(column) {
+        if (!column.internal) {
+          columns.push(column);
+        }
+      });
+      return definition;
+    },
+
     set_schema: function(o, schema_name) {
-      if (o.schema_name === false) {
-        o.schema_name = schema_name;
-      }
+      if (o.schema_name === false) o.schema_name = schema_name;
       var schema_prefix = o.schema_name ? o.schema_name + '.' : '';
       o.table.fullname = schema_prefix + o.table.name;
       o.table.id_sequence_name = o.table.fullname + '_id_seq';
@@ -114,28 +156,28 @@ define(module, function(exports, require) {
       return o;
     },
 
-    create: function(fields, data, options) {
+    create: function(fields, source, target, options) {
       options = qp.options(options, { internal: false });
-      if (qp.is(data, 'array')) {
-        return qp.map(data, function(item) {
-          return this.create_item(fields, item, {}, options);
+      if (qp.is(source, 'array')) {
+        return qp.map(source, function(item) {
+          return this.create_item(fields, item, null, options);
         }.bind(this));
-      } else if (qp.is(data, 'object', 'undefined')) {
-        return this.create_item(fields, data || {}, options.instance || {}, options);
+      } else if (qp.is(source, 'object', 'undefined')) {
+        return this.create_item(fields, source, target, options);
       } else {
         return null;
       }
     },
 
     create_item: function(fields, source, target, options) {
-      if (qp.is(source, 'object')) {
-        qp.each_own(fields, function(v, k) {
-          if (options.internal || !v.internal) {
-            target[k] = source[k] || v.default();
-          }
-        });
-      }
-      return target || {};
+      source = source || {};
+      target = target || {};
+      qp.each_own(fields, function(column, key) {
+        if (options.internal || !column.internal) {
+          target[key] = source[key] || column.default();
+        }
+      });
+      return target;
     },
 
     index: function(column, options) {
@@ -205,32 +247,32 @@ define(module, function(exports, require) {
       return qp.options(field, options);
     },
 
-    primary: function() {
-      return this.field('integer', { primary: true, managed: true });
+    primary: function(options) {
+      return this.field('integer', qp.options({ primary: true, managed: true }, options));
     },
 
-    primary_key: function() {
-      return this.field('integer', { primary_key: true, sequence: true, managed: false });
+    primary_key: function(options) {
+      return this.field('integer', qp.options({ primary_key: true, sequence: true, managed: false }, options));
     },
 
-    foreign: function(table) {
-      return this.field('integer', { foreign: true, table: table });
+    foreign: function(table, options) {
+      return this.field('integer', qp.options({ foreign: true, table: table }, options));
     },
 
-    foreign_ids: function(table) {
-      return this.field('integer', { foreign: true, table: table, array: true });
+    foreign_ids: function(table, options) {
+      return this.field('integer', qp.options({ foreign: true, table: table, array: true }, options));
     },
 
-    unique: function() {
-      return this.field('integer', { unique: true, managed: false });
+    unique: function(options) {
+      return this.field('integer', qp.options({ unique: true, managed: false }, options));
     },
 
-    created: function() {
-      return this.field('datetime', { managed: true });
+    created: function(options) {
+      return this.field('datetime', qp.options({ managed: true }, options));
     },
 
-    modified: function() {
-      return this.field('datetime', { managed: true });
+    modified: function(options) {
+      return this.field('datetime', qp.options({ managed: true }, options));
     }
 
   });
