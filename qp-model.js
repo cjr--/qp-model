@@ -7,12 +7,14 @@ define(module, function(exports, require) {
     ns: 'qp-model/model',
 
     init: function(o) {
-      var schema = this.schema;
-      var source = qp.delete_key(o, schema.name);
-      this.set_data(source, o);
-      if (o && o.display) this.refresh();
+      this.set_data(qp.delete_key(o, this.schema.name), o);
+      if (o && o.display) {
+        this.initialise({ create: o.create });
+        this.refresh();
+      }
     },
 
+    initialise: function(o) { },
     refresh: function() { },
 
     set_user: function(user) {
@@ -33,7 +35,7 @@ define(module, function(exports, require) {
         } else {
           this[key] = source[key] || column.default();
         }
-      });
+      }.bind(this));
     },
 
     get_data: function(options) {
@@ -47,7 +49,7 @@ define(module, function(exports, require) {
         } else {
           target[key] = this[key];
         }
-      });
+      }.bind(this));
       return target;
     }
 
