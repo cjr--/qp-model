@@ -7,7 +7,8 @@ define(module, function(exports, require) {
     ns: 'qp-model/model',
 
     init: function(o) {
-      this.set_data(qp.delete_key(o, this.schema.name), o);
+      var data = qp.delete_key(o, this.schema.name);
+      this.set_data(data, o);
       if (o && o.display) {
         this.initialise({ create: o.create });
         this.refresh();
@@ -32,6 +33,8 @@ define(module, function(exports, require) {
           var _key = '_' + key;
           this[key] = source[key] || source[_key] || qp.id();
           this[_key] = source[key] || 0;
+        } else if (column.datetime) {
+          this[key] = qp.date(source[key]) || column.default();
         } else {
           this[key] = source[key] || column.default();
         }
@@ -46,6 +49,8 @@ define(module, function(exports, require) {
           var _key = '_' + key;
           target[key] = this[key] === this[_key] ? this[key] : 0;
           target[_key] = this[key] || 0;
+        } else if (column.datetime) {
+          target[key] = qp.date(this[key], 'iso');
         } else {
           target[key] = this[key];
         }
