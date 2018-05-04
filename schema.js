@@ -21,10 +21,17 @@ define(module, function(exports, require) {
         index.name = name;
         schema.indexes[name] = index;
       });
+      if (schema.api || o.api) schema.api = qp.merge(schema.api, o.api);
       qp.each_own(o.columns, function(column, name) {
-        column.name = name;
-        schema.columns[name] = column;
-        if (column.managed) schema.fields.managed.push(name); else schema.fields.all.push(name);
+        var schema_column = schema.columns[name];
+        if (schema_column) {
+          qp.merge(schema_column, column);
+        } else {
+          column.name = name;
+          schema_column = schema.columns[name] = column;
+          if (column.managed) { schema.fields.managed.push(name); }
+          else { schema.fields.all.push(name); }
+        }
       });
       qp.each(o.meta.columns, function(meta_column, i) {
         var column = schema.columns[meta_column.name];
@@ -64,11 +71,11 @@ define(module, function(exports, require) {
         fullname: schema_prefix + o.table,
         id_sequence_name: schema_prefix + o.table + '_id_seq'
       };
+      qp.each_own(o.indexes, function(index, name) { index.name = name; });
       qp.each_own(o.columns, function(column, name) {
         column.name = name;
         if (column.managed) o.fields.managed.push(name); else o.fields.all.push(name);
       });
-      qp.each_own(o.indexes, function(index, name) { index.name = name; });
 
       o.create = this.create.bind(this, o.columns);
       o.get_schema = this.get_model_definition.bind(this, o);
