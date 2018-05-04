@@ -7,7 +7,8 @@ define(module, function(exports, require) {
     ns: 'qp-model/model',
 
     init: function(o) {
-      this.set_data(qp.delete_key(o, this.schema.name), o);
+      var data = qp.delete_key(o, this.schema.name);
+      this.set_data(data, o);
       if (o && o.display) {
         this.initialise({ create: o.create });
         this.refresh();
@@ -32,6 +33,8 @@ define(module, function(exports, require) {
           var _key = '_' + key;
           this[key] = source[key] || source[_key] || qp.id();
           this[_key] = source[key] || 0;
+        } else if (column.datetime) {
+          this[key] = qp.date(source[key]) || column.default();
         } else {
           this[key] = source[key] || column.default();
         }
@@ -46,6 +49,8 @@ define(module, function(exports, require) {
           var _key = '_' + key;
           target[key] = this[key] === this[_key] ? this[key] : 0;
           target[_key] = this[key] || 0;
+        } else if (column.datetime) {
+          target[key] = qp.date(this[key], 'iso');
         } else {
           target[key] = this[key];
         }
@@ -80,10 +85,17 @@ define(module, function(exports, require) {
         index.name = name;
         schema.indexes[name] = index;
       });
+      if (schema.api || o.api) schema.api = qp.merge(schema.api, o.api);
       qp.each_own(o.columns, function(column, name) {
-        column.name = name;
-        schema.columns[name] = column;
-        if (column.managed) schema.fields.managed.push(name); else schema.fields.all.push(name);
+        var schema_column = schema.columns[name];
+        if (schema_column) {
+          qp.merge(schema_column, column);
+        } else {
+          column.name = name;
+          schema_column = schema.columns[name] = column;
+          if (column.managed) { schema.fields.managed.push(name); }
+          else { schema.fields.all.push(name); }
+        }
       });
       qp.each(o.meta.columns, function(meta_column, i) {
         var column = schema.columns[meta_column.name];
@@ -123,11 +135,11 @@ define(module, function(exports, require) {
         fullname: schema_prefix + o.table,
         id_sequence_name: schema_prefix + o.table + '_id_seq'
       };
+      qp.each_own(o.indexes, function(index, name) { index.name = name; });
       qp.each_own(o.columns, function(column, name) {
         column.name = name;
         if (column.managed) o.fields.managed.push(name); else o.fields.all.push(name);
       });
-      qp.each_own(o.indexes, function(index, name) { index.name = name; });
 
       o.create = this.create.bind(this, o.columns);
       o.get_schema = this.get_model_definition.bind(this, o);
