@@ -42,7 +42,7 @@ define(module, function(exports, require) {
     },
 
     get_data: function(options) {
-      var target = options.target || {};
+      var target = options ? (options.target || {}) : {};
       qp.each(this.schema.columns, function(column) {
         var key = column.name;
         if (column.primary || column.primary_key) {
