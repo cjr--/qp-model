@@ -28,16 +28,27 @@ define(module, function(exports, require) {
       }.bind(this));
     },
 
-    set_member: function(name, model, id_name, id_key) {
-      id_name = id_name || 'id';
-      id_key = id_key || (name + '_' + id_name);
-      var key_value = this[id_key];
-      if (qp.is(model, 'array')) model = qp.find(model, function(o) { return o[id_name] === key_value; });
+    add_member: function(name) {
+      if (this.$members.indexOf(name) === -1) this.$members.push(name);
+    },
+
+    set_member: function(name, model, pk, fk) {
+      pk = pk || 'id';
+      fk = fk || (name + '_' + pk);
+      var fk_value = this[fk];
+      if (qp.is(model, 'array')) { model = qp.find(model, function(o) { return o[pk] === fk_value; }); }
       if (qp.is(model, 'object')) {
         this[name] = model;
-        this[id_key] = model[id_name];
+        this[fk] = model[pk];
       }
-      this.$members.push(name);
+      this.add_member(name);
+    },
+
+    set_list_member: function(name, model_list, pk, fk) {
+      this[name] = qp.map(this[fk], function(id) {
+        return qp.find(model_list, function(o) { return o[pk] === id; });
+      });
+      this.add_member(name);
     },
 
     set_user: function(user) { this.set_member('user', user); },
@@ -80,7 +91,13 @@ define(module, function(exports, require) {
       var clone = this.self.create(config);
       qp.each(this.members, function(name) {
         var member = this[name];
-        if (member && member.clone) clone['set_' + name](member.clone());
+        if (member) {
+          if (qp.is_array(member)) {
+            clone['set_' + name](qp.map(member, function(item) { return (item.clone ? item.clone() : null); }));
+          } else if (member.clone) {
+            clone['set_' + name](member.clone());
+          }
+        }
       }.bind(this));
     }
 
