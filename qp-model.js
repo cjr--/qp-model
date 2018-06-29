@@ -317,7 +317,7 @@ define(module, function(exports, require) {
     },
 
     foreign_ids: function(table, options) {
-      return this.field('integer', qp.options({ foreign: true, table: table, array: true }, options));
+      return this.field('integer', qp.options({ foreign: true, table: table, array: true, default: function() { return []; } }, options));
     },
 
     unique: function(options) {
