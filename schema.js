@@ -17,6 +17,9 @@ define(module, function(exports, require) {
 
     extend: function(_exports, o) {
       var schema = require(o.extend);
+      qp.each_own(o.triggers, function(trigger, name) {
+        schema.triggers[name] = trigger;
+      });
       qp.each_own(o.indexes, function(index, name) {
         index.name = name;
         schema.indexes[name] = index;
@@ -63,6 +66,7 @@ define(module, function(exports, require) {
     build: function(_exports, o) {
       o.fields = { managed: [], all: [] };
       o.columns = o.columns || {};
+      o.triggers = o.triggers || {};
       o.indexes = o.indexes || {};
       o.schema_name = o.schema || false;
       var schema_prefix = o.schema_name ? o.schema_name + '.' : '';
