@@ -89,16 +89,20 @@ define(module, function(exports, require) {
       var config = { display: true };
       config[this.schema.name] = this.get_data();
       var clone = this.self.create(config);
-      qp.each(this.members, function(name) {
+      qp.each(this.$members, function(name) {
         var member = this[name];
         if (member) {
           if (qp.is_array(member)) {
             clone['set_' + name](qp.map(member, function(item) { return (item.clone ? item.clone() : null); }));
           } else if (member.clone) {
             clone['set_' + name](member.clone());
+          } else {
+            clone['set_' + name](qp.clone(member));
           }
+          clone.add_member(name);
         }
       }.bind(this));
+      return clone;
     }
 
   });
