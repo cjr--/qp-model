@@ -11,12 +11,14 @@ define(module, function(exports, require) {
 
     init: function(o) {
       var data = qp.delete_key(o, this.schema.name);
-      this.set_data(data, o);
-      this.$state = { created: o.create || false, modified: false, deleted: false };
-      this.$members = [];
-      if (o && o.display) this.initialise({ create: o.create });
-      if (o && o.members) this.set_members(o.members);
-      if (o && o.display) this.refresh();
+      if (qp.defined(data) && data !== null) {
+        this.set_data(data, o);
+        this.$state = { created: o.create || false, modified: false, deleted: false };
+        this.$members = [];
+        if (o && o.display) this.initialise({ create: o.create });
+        if (o && o.members) this.set_members(o.members);
+        if (o && o.display) this.refresh();
+      }
     },
 
     initialise: function(o) { },
