@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/cjr--/qp-model#readme",
   "dependencies": {
-    "qp-utility": "^1.4.27"
+    "qp-utility": "^1.4.51"
   },
   "devDependencies": {
-    "uglify-js": "^3.3.9"
+    "uglify-js": "^3.4.9"
   }
 }
