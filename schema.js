@@ -4,12 +4,16 @@ define(module, function(exports, require) {
 
   var int_widths = { 2: 6, 4: 11, 8: 20 };
 
-  function default_string()   { return ''; }
-  function default_number()   { return 0; }
-  function default_boolean()  { return false; }
-  function default_datetime() { return new Date(); }
-  function default_date()     { return (new Date()).setUTCHours(12, 0, 0, 0); }
-  function default_bytea()    { return ''; }
+  var field_default = {
+    string:       function() { return ''; },
+    number:       function() { return 0; },
+    boolean:      function() { return false; },
+    datetime:     function() { return new Date(); },
+    date:         function() { return (new Date()).setUTCHours(12, 0, 0, 0); },
+    min_datetime: function() { return new Date(-62135596800000); },
+    max_datetime: function() { return new Date(253402214400000); },
+    bytea:        function() { return ''; }
+  };
 
   qp.module(exports, {
 
@@ -128,7 +132,19 @@ define(module, function(exports, require) {
       target = target || {};
       qp.each_own(fields, function(column, key) {
         if (options.internal || !column.internal) {
-          target[key] = source[key] || column.default();
+          var value = source[key];
+          if (qp.undefined(value)) {
+            target[key] = column.default();
+          } else {
+            target[key] = value;
+          }
+          if (column.datetime) {
+            if (target[key] === -Infinity) {
+              target[key] = qp.min_date();
+            } else if (target[key] === Infinity) {
+              target[key] = qp.max_date();
+            }
+          }
         }
       });
       return target;
@@ -155,37 +171,40 @@ define(module, function(exports, require) {
         scale = 0;
       }
       options = options || {};
+      if (qp.is(options.default, 'string')) {
+        options.default = field_default[options.default];
+      }
       var field;
 
       if (type === 'text' && size === 0) {
-        field = { type: 'text', text: true, size: 0, default: options.default || default_string };
+        field = { type: 'text', text: true, size: 0, default: options.default || field_default.string };
       } else if (type === 'text') {
-        field = { type: 'varchar', text: true, size: size, default: options.default || default_string };
+        field = { type: 'varchar', text: true, size: size, default: options.default || field_default.string };
 
       } else if (type === 'smallint' || type === 'int2') {
-        field = { type: 'smallint', int: true, size: 2, default: options.default || default_number };
+        field = { type: 'smallint', int: true, size: 2, default: options.default || field_default.number };
       } else if (type === 'int' || type === 'int4' || type === 'integer') {
-        field = { type: 'integer', int: true, size: 4, default: options.default || default_number };
+        field = { type: 'integer', int: true, size: 4, default: options.default || field_default.number };
       } else if (type === 'bigint' || type === 'int8') {
-        field = { type: 'bigint', int: true, size: 8, default: options.default || default_number };
+        field = { type: 'bigint', int: true, size: 8, default: options.default || field_default.number };
 
       } else if (type === 'numeric' || type === 'decimal' || type === 'number') {
-        field = { type: 'numeric', numeric: true, size: size, scale: scale, default: options.default || default_number };
+        field = { type: 'numeric', numeric: true, size: size, scale: scale, default: options.default || field_default.number };
 
       } else if (type === 'currency') {
-        field = { type: 'numeric', numeric: true, size: 12, scale: 4, default: options.default || default_number };
+        field = { type: 'numeric', numeric: true, size: 12, scale: 4, default: options.default || field_default.number };
 
       } else if (type === 'bool' || type === 'boolean') {
-        field = { type: 'boolean', boolean: true, default: options.default || default_boolean };
+        field = { type: 'boolean', boolean: true, default: options.default || field_default.boolean };
 
       } else if (type === 'dt' || type === 'datetime') {
-        field = { type: 'timestamp with time zone', datetime: true, default: options.default || default_datetime };
+        field = { type: 'timestamp with time zone', datetime: true, default: options.default || field_default.datetime };
 
       } else if (type === 'date') {
-        field = { type: 'timestamp with time zone', date: true, default: options.default || default_date };
+        field = { type: 'timestamp with time zone', date: true, default: options.default || field_default.date };
 
       } else if (type === 'bytea') {
-        field = { type: 'bytea', data: true, default: options.default || default_bytea };
+        field = { type: 'bytea', data: true, default: options.default || field_default.bytea };
 
       } else if (type === 'smallserial') {
         field = { type: 'smallserial', int: true, size: 2, default: qp.noop };
