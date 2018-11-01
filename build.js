@@ -1,6 +1,11 @@
+require('qp-define');
+
 var path = require('path');
 var fs = require('fs');
 var uglify = require('uglify-js');
+var term = require('qp-library/term');
+
+term.set_title('qp-model - build');
 
 fs.writeFileSync(
   path.join(__dirname, 'qp-model.js'), [
