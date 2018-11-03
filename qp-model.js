@@ -134,6 +134,7 @@ define(module, function(exports, require) {
 
     extend: function(_exports, o) {
       var schema = require(o.extend);
+      schema.fields.system = [];
       qp.each_own(o.triggers, function(trigger, name) {
         schema.triggers[name] = trigger;
       });
@@ -150,7 +151,10 @@ define(module, function(exports, require) {
           column.name = name;
           schema_column = schema.columns[name] = column;
           if (column.managed) { schema.fields.managed.push(name); }
-          else { schema.fields.all.push(name); }
+          else {
+            schema.fields.all.push(name);
+            schema.fields.system.push(name);
+          }
         }
       });
       qp.each(o.meta.columns, function(meta_column, i) {
@@ -181,7 +185,7 @@ define(module, function(exports, require) {
     },
 
     build: function(_exports, o) {
-      o.fields = { managed: [], all: [] };
+      o.fields = { managed: [], all: [], public: [] };
       o.columns = o.columns || {};
       o.triggers = o.triggers || {};
       o.indexes = o.indexes || {};
@@ -195,7 +199,12 @@ define(module, function(exports, require) {
       qp.each_own(o.indexes, function(index, name) { index.name = name; });
       qp.each_own(o.columns, function(column, name) {
         column.name = name;
-        if (column.managed) o.fields.managed.push(name); else o.fields.all.push(name);
+        if (column.managed) {
+          o.fields.managed.push(name);
+        } else {
+          o.fields.all.push(name);
+          o.fields.public.push(name);
+        }
       });
 
       o.create = this.create.bind(this, o.columns);
