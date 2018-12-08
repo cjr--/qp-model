@@ -328,6 +328,9 @@ define(module, function(exports, require) {
       } else if (type === 'bytea') {
         field = { type: 'bytea', data: true, default: options.default || field_default.bytea };
 
+      } else if (type === 'jsonb' || type === 'json') {
+        field = { type: type, json: true, default: options.default || field_default.string };
+
       } else if (type === 'smallserial') {
         field = { type: 'smallserial', int: true, size: 2, default: qp.noop };
       } else if (type === 'serial') {
