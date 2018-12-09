@@ -236,6 +236,10 @@ define(module, function(exports, require) {
       return this.field('integer', qp.options({ primary: true, managed: true }, options));
     },
 
+    reference: function(options) {
+      return this.field('text', qp.options({ unique: true }, options));
+    },
+
     primary_key: function(options) {
       return this.field('integer', qp.options({ primary_key: true, sequence: true, managed: false }, options));
     },
