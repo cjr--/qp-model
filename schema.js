@@ -212,6 +212,9 @@ define(module, function(exports, require) {
       } else if (type === 'date') {
         field = { type: 'timestamp with time zone', date: true, default: options.default || field_default.date };
 
+      } else if (type === 'uuid') {
+        field = { type: 'uuid', uuid: true, default: options.default || field_default.string };
+
       } else if (type === 'bytea') {
         field = { type: 'bytea', data: true, default: options.default || field_default.bytea };
 
@@ -236,12 +239,24 @@ define(module, function(exports, require) {
       return this.field('integer', qp.options({ primary: true, managed: true }, options));
     },
 
-    reference: function(options) {
-      return this.field('text', qp.options({ unique: true }, options));
+    primary_uuid: function(options) {
+      return this.field('uuid', qp.options({ primary: true, managed: false }, options));
     },
 
     primary_key: function(options) {
       return this.field('integer', qp.options({ primary_key: true, sequence: true, managed: false }, options));
+    },
+
+    uuid: function(options) {
+      return this.field('uuid', qp.options({ unique: true }, options));
+    },
+
+    entity_id: function(options) {
+      return this.field('text', qp.options({ unique: true, managed: false, entity_id: true }, options));
+    },
+
+    reference: function(options) {
+      return this.field('text', qp.options({ unique: true }, options));
     },
 
     foreign: function(table, options) {
