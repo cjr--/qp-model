@@ -1,5 +1,5 @@
 var path = require('path');
-require('dotenv').load({ silent: true });
+require('dotenv').config();
 require(path.join(process.env.REPO_PATH || '', 'qp-define'));
 
 // use local source code if its available
