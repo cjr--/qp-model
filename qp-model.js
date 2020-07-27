@@ -293,6 +293,11 @@ define(module, function(exports, require) {
         scale = 0;
       }
       options = options || {};
+      if (type.slice(-2) === '[]') {
+        type = type.slice(0, -2);
+        options.array = true;
+        options.default = function() { return []; }
+      }
       if (qp.is(options.default, 'string')) {
         options.default = field_default[options.default];
       }
