@@ -370,7 +370,7 @@ define(module, function(exports, require) {
     },
 
     entity_id: function(options) {
-      return this.field('text', qp.options({ unique: true, managed: false, entity_id: true }, options));
+      return this.field('text', qp.options({ managed: false, entity_id: true }, options));
     },
 
     reference: function(options) {
