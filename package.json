@@ -1,6 +1,6 @@
 {
   "name": "qp-model",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "description": "schema & model components for server & client",
   "main": "index.js",
   "scripts": {
