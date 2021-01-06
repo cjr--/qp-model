@@ -213,11 +213,12 @@ define(module, function(exports, require) {
       _exports(o);
     },
 
-    get_model_definition: function(o) {
+    get_model_definition: function(o, options) {
+      options = options || { internal: false };
       var definition = { name: o.name };
       var columns = definition.columns = [];
       qp.each_own(o.columns, function(column) {
-        if (!column.internal) {
+        if (options.internal || !column.internal) {
           columns.push(column);
         }
       });
