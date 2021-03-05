@@ -269,6 +269,10 @@ define(module, function(exports, require) {
       return this.field('integer', qp.options({ foreign: true, table: table }, options));
     },
 
+    foreign_uuid: function(table, options) {
+      return this.field('uuid', qp.options({ foreign: true, table: table }, options));
+    },
+
     foreign_ids: function(table, options) {
       return this.field('integer', qp.options({ foreign: true, table: table, array: true, default: function() { return []; } }, options));
     },
