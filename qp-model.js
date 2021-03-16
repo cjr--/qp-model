@@ -366,6 +366,10 @@ define(module, function(exports, require) {
       return this.field('integer', qp.options({ primary_key: true, sequence: true, managed: false }, options));
     },
 
+    candidate_uuid: function(options) {
+      return this.field('uuid', qp.options({ managed: false, unique: true }, options));
+    },
+
     uuid: function(options) {
       return this.field('uuid', qp.options({ unique: true }, options));
     },
@@ -388,6 +392,10 @@ define(module, function(exports, require) {
 
     foreign_ids: function(table, options) {
       return this.field('integer', qp.options({ foreign: true, table: table, array: true, default: function() { return []; } }, options));
+    },
+
+    foreign_uuids: function(table, options) {
+      return this.field('uuid', qp.options({ foreign: true, table: table, array: true, default: function() { return []; } }, options));
     },
 
     unique: function(options) {
