@@ -242,7 +242,7 @@ define(module, function(exports, require) {
     },
 
     primary: function(options) {
-      return this.field('integer', qp.options({ primary: true, managed: true }, options));
+      return this.field('integer', qp.options({ primary: true, sequence: true, managed: true, generated_always: true }, options));
     },
 
     primary_uuid: function(options) {
