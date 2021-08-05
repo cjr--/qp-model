@@ -5,6 +5,7 @@ define(module, function(exports, require) {
   var int_widths = { 2: 6, 4: 11, 8: 20 };
 
   var field_default = {
+    uuid:         function() { return null; },
     string:       function() { return ''; },
     number:       function() { return 0; },
     boolean:      function() { return false; },
@@ -219,7 +220,7 @@ define(module, function(exports, require) {
         field = { type: 'timestamp with time zone', date: true, default: options.default || field_default.date };
 
       } else if (type === 'uuid') {
-        field = { type: 'uuid', uuid: true, default: options.default || field_default.string };
+        field = { type: 'uuid', uuid: true, default: options.default || field_default.uuid };
 
       } else if (type === 'bytea') {
         field = { type: 'bytea', data: true, default: options.default || field_default.bytea };
