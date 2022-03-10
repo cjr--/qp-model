@@ -360,7 +360,7 @@ define(module, function(exports, require) {
     },
 
     primary_uuid: function(options) {
-      return this.field('uuid', qp.options({ primary: true, managed: false }, options));
+      return this.field('uuid', qp.options({ generated: true, primary: true, managed: false }, options));
     },
 
     primary_key: function(options) {
@@ -368,7 +368,7 @@ define(module, function(exports, require) {
     },
 
     candidate_uuid: function(options) {
-      return this.field('uuid', qp.options({ managed: false, unique: true }, options));
+      return this.field('uuid', qp.options({ generated: true, managed: false, unique: true }, options));
     },
 
     uuid: function(options) {
