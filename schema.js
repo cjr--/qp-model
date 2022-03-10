@@ -259,7 +259,11 @@ define(module, function(exports, require) {
     },
 
     uuid: function(options) {
-      return this.field('uuid', qp.options({ unique: true }, options));
+      return this.field('uuid', qp.options({ generated: true, unique: true }, options));
+    },
+
+    optional_uuid: function(options) {
+      return this.field('uuid', qp.options({ generated: false, unique: false }, options));
     },
 
     entity_id: function(options) {
